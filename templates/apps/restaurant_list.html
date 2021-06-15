@@ -1,0 +1,22 @@
+{% extends "../base.html" %}
+
+{% block content %}
+ <h3>Restaurant list</h3>
+
+<ul>
+  {% for restaurant in latest_restaurant_list %}
+    <li><a href="{% url 'apps:restaurant_detail' restaurant.id %}">
+    {{ restaurant.name }}</a></li>
+   {% empty %}<li>Sorry, no restaurant reviews. </li>
+  {% endfor %}
+</ul>
+
+ {% if request.user.is_authenticated %}
+ <p><span class="glyphicon glyphicon-plus"></span> <a
+         href="{% url 'apps:restaurant_create' %}">Add a restaurant</a></p>
+ {% else %}
+
+ <p>Add a restaurant after <a
+         href="{% url 'login' %}?next={% url 'apps:restaurant_create' %}">sign in</a>. </p>
+  {% endif %}
+{% endblock %}
