@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps'
+    "django.contrib.gis",
+    'location_field.apps.DefaultConfig',
+    'apps',
 ]
 
 MIDDLEWARE = [
@@ -72,13 +74,16 @@ WSGI_APPLICATION = 'restaurant_app.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    #    'ENGINE': 'django.db.backends.postgresql',
+       'ENGINE': 'django.contrib.gis.db.backends.postgis',
+       'NAME': 'restaurant_db',
+       'USER': 'root',
+       'PASSWORD': 'root',
+       'HOST': 'localhost',
+       'PORT': '5432',
+   }
 }
 
 
@@ -126,3 +131,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = '/apps/'
+
+LOCATION_FIELD = {
+    # 'search.provider': 'google',
+    # 'provider.google.api': '//maps.google.com/maps/api/js?sensor=false',
+    # 'provider.google.api_key': '',
+    # 'provider.google.api_libraries': '',
+    # 'provider.google.map.type': 'ROADMAP',
+    # OpenMap realted settings
+    'provider.openstreetmap.max_zoom': 18,
+    'map.provider': 'openstreetmap',
+    'search.provider': 'nominatim',
+}

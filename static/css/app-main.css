@@ -1,0 +1,9 @@
+ul.restaurant-list li{
+    padding: 5px;
+    list-style: none;
+}
+
+.published-on{
+    font-size: 10px;
+    font-weight: bold;
+}

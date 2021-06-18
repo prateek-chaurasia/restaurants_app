@@ -1,52 +1,60 @@
 {% extends "../base.html" %}
-
+{% block title %}
+    Restaurant Detail
+{% endblock %}
 {% block content %}
-<h3>
-  {{ restaurant.name }}
-  {% if request.user == restaurant.user %}
-   (<a href="{% url 'apps:restaurant_edit' restaurant.id %}">edit</a>)
-  {% endif %}
-</h3>
+    <h3>
+        <span class="glyphicon glyphicon-home"></span>
+      {{ restaurant.name }}
+      {% if request.user == restaurant.user %}
+       (<a href="{% url 'apps:restaurant_edit' restaurant.id %}">edit</a>)
+      {% endif %}
+    </h3>
 
- <h4>Address</h4>
+    <h4>Address</h4>
+    <p>
+      {{ restaurant.address }}
+    </p>
 
-<p>
-  {{ restaurant.address }}, <br/>
-  {{ restaurant.telephone }}
-</p>
+    <hr>
+    <h4>User Reviews</h4>
+    {% if restaurant.reviews.all %}
+        {% for review in restaurant.reviews.all %}
+            <p>{{ review.rating}}
+                <span class="glyphicon glyphicon-star"></span>,
+                {{ review.user }} reviews,
+                <sm class="published-on">{{ review.date | date:"Y-m-d" }}</sm>
+            </p>
+          <p>{{ review.comment }}</p>
 
+      {% endfor %}
 
-
- <h4>User Reviews</h4>
-{% if restaurant.reviews.all %}
-  {% for review in restaurant.reviews.all %}
-
-   <p>{{ review.rating}}Star, {{ review.user }} reviews, {{ review.date | date:"Y-m-d" }}</p>
-      <p>{{ review.comment }}</p>
-
-  {% endfor %}
-
-{% else %}
- <p>There are currently no user reviews. </p>{% endif %}
-
- <h4>Add a review</h4>
-{% if request.user.is_authenticated %}
-<form action="{% url 'apps:restaurant_review_create' restaurant.id %}" method="post">
-  {% csrf_token %}
-   <p>Comments</p>
-  <textarea name="comment" id="comment"></textarea>
-   <p>Rating</p>
-  <p>
-    {% for rate in RATING_CHOICES %}
-      <input type="radio" name="rating" id="rating{{ forloop.counter }}" value="{{ rate.0 }}" />
-   <label for="choice{{ forloop.counter }}">{{ rate.0 }} star</label>
-      <br/>
-    {% endfor %}
-  </p>
-   <input type="submit" value="submit" />
-</form>
-{% else %}
- <p>Please <a href="{% url 'login' %}?next={% firstof request.path '/' %}">sign in</a> to comment again. </p>
-{% endif %}
+    {% else %}
+        <p>There are currently no user reviews. </p>
+    {% endif %}
+    <hr>
+    <h4>Add a review</h4>
+        {% if request.user.is_authenticated %}
+            <form action="{% url 'apps:restaurant_review_create' restaurant.id %}" method="post">
+            {% csrf_token %}
+                <p>Comments</p>
+                <textarea name="comment" id="comment"></textarea>
+                <p>Rating</p>
+                <p>
+                    {% for rate in RATING_CHOICES %}
+                      <input type="radio" name="rating"
+                             id="rating{{ forloop.counter }}" value="{{ rate.0 }}"/>
+                        <label for="choice{{ forloop.counter }}">
+                            {{ rate.0 }} star</label>
+                      <br/>
+                    {% endfor %}
+                </p>
+                <input type="submit" value="submit" />
+            </form>
+        {% else %}
+            <p>Please
+                <a href="{% url 'login' %}?next={% firstof request.path '/' %}">
+                    sign in</a> to comment again. </p>
+        {% endif %}
 
 {% endblock %}

@@ -3,11 +3,12 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, UpdateView
 from django.views.generic.edit import CreateView
-from .models import RestaurantReview, Restaurant #, Dish
-from .forms import RestaurantForm, RestaurantReviewForm #, DishForm
+from .models import RestaurantReview, Restaurant
+from .forms import RestaurantForm, RestaurantReviewForm
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
+from geopy.geocoders import Nominatim
 
 
 class RestaurantList(ListView):
@@ -32,9 +33,16 @@ class RestaurantCreate(CreateView):
     template_name = 'apps/form.html'
     form_class = RestaurantForm
 
+    def get_context_data(self, **kwargs):
+        context = super(RestaurantCreate, self).get_context_data(**kwargs)
+        context['form_heading'] = 'Add Restaurant'
+        return context
+
     # Associate form.instance.user with self.request.user
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        geolocator = Nominatim(user_agent="Restaurant App")
+        location = geolocator.reverse(self.request.POST.get('location'))
+        form.instance.address = location.address
         return super(RestaurantCreate, self).form_valid(form)
 
 
