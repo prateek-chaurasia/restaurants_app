@@ -21,8 +21,8 @@
 {% include 'header.html' %}
 
  <!-- Page content of course! -->
-<main id="section1" class="container-fluid">
-<div class="container">
+<main id="section1" class="container">
+<div class="container main-wrapper">
   <div class="row">
  <div class="col-sm-12">
    <div class="wrapper">
@@ -39,9 +39,9 @@
 
 </div>
 </main>
-<footer class="container-fluid footer">
-  @{% now "Y" %} All rights reserved.
-</footer>
+<div class="container-fluid fixed-bottom footer text-center">
+  <span class="text-muted">@{% now "Y" %} All rights reserved.</span>
+</div>
 <!--End of Footer-->
 
 <!-- Bootstrap core JavaScript

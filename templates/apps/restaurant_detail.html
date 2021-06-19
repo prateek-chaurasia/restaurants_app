@@ -6,55 +6,199 @@
     <h3>
         <span class="glyphicon glyphicon-home"></span>
       {{ restaurant.name }}
-      {% if request.user == restaurant.user %}
-       (<a href="{% url 'apps:restaurant_edit' restaurant.id %}">edit</a>)
+      {% if request.user.is_authenticated %}
+        {% for obj in restaurant.mapuserrestaurant_set.all %}
+            {% if request.user == obj.user and obj.visited %}
+                <span class="visited">**Visited</span>
+            {% endif %}
+
+
+            {% if request.user == obj.user and not obj.suggested %}
+                <span id="thumps-down" class="glyphicon glyphicon-thumbs-down disabled"></span>
+            {% else %}
+                <span id="thumps-down" class="glyphicon glyphicon-thumbs-down"></span>
+            {% endif %}
+        {% endfor %}
       {% endif %}
+      <!-- <span id="thumps-down" class="glyphicon glyphicon-thumbs-down"></span> -->
     </h3>
 
     <h4>Address</h4>
     <p>
       {{ restaurant.address }}
     </p>
-
     <hr>
-    <h4>User Reviews</h4>
-    {% if restaurant.reviews.all %}
-        {% for review in restaurant.reviews.all %}
-            <p>{{ review.rating}}
-                <span class="glyphicon glyphicon-star"></span>,
-                {{ review.user }} reviews,
-                <sm class="published-on">{{ review.date | date:"Y-m-d" }}</sm>
-            </p>
-          <p>{{ review.comment }}</p>
+    <div class="row">
+        <div class="col-md-11 col-md-offset-1">
+            <h4>User Reviews 
+                {% if request.user.is_authenticated %}
+                    <a id="add_review">(Add Review)</a>
+                {% else %}
+                    <span class="sign-in-banner">Please
+                        <a href="{% url 'login' %}?next={% firstof request.path '/' %}">
+                            sign in</a> to post a review again. </span>
+                {% endif %} 
+            </h4>
+            <div class="row" id="add_review_form" style="display: none;">
+                <div class="col-md-5">
+                    <form action="{% url 'apps:restaurant_review_create' restaurant.id %}"
+                     method="post">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="col-3">
+                                <label for="comment" class="col-sm-2 col-form-label">Review</label>
+                                <textarea name="comment" id="comment" class="form-control"></textarea>
+                            </div>
+                            <div class="col">
+                                <label class="col-form-label col-sm-2 pt-3">Rating</label>
+                                <div class="col-sm-10">
+                                    {% for rate in RATING_CHOICES %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="rating" class="form-control"
+                                            id="rating{{ forloop.counter }}" value="{{ rate.0 }}">
+                                        <label class="form-check-label" for="choice{{ forloop.counter }}">
+                                            {{ rate.0 }} star
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="col-form-label col-sm-2 pt-3">Visited</label>
+                                <div class="col-sm-10">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="visited" class="form-control"
+                                            id="visited{{ forloop.counter }}" value="true">
+                                        <label class="form-check-label" for="visited_{{ forloop.counter }}">
+                                            Visited
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="visited" class="form-control"
+                                            id="visited{{ forloop.counter }}" value="false">
+                                        <label class="form-check-label" for="visited_{{ forloop.counter }}">
+                                             Not Visited
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary btn-sm mb-2">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% if restaurant.reviews.all %}
+                <!-- Review Section-->
+                {% for review in restaurant.reviews.all %}
+                    <div class="row">
+                        <div class="col-md-8 {% cycle 'even' 'odd' %}">
+                            <p>{{ review.comment|linebreaks }}</p>
+                            <p>{{ review.rating}}
+                                <span class="glyphicon glyphicon-star"></span>,
+                                <span {% if request.user == review.user %} class="it-isme" {% endif %}>
+                                    by {{ review.user }}
+                                </span>
+                                <small class="published-on text-muted">({{ review.date | date:"Y-m-d" }})</small>
+                                {% if request.user.is_authenticated %}
+                                    <small>
+                                        <a href="{% url 'apps:add_comment_to_review' review.id %}" 
+                                        id="add_comment" class="{{ review.id }}">(Add comment)</a>
+                                    </small>
+                                {% endif %}
+                            </p>
+                            <hr>
+                            <div class="row" id="add_comment_form_{{ review.id }}" style="display: none;">
+                                <div class="col-md-11 col-md-offset-1">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <form action="{% url 'apps:add_comment_to_review' review.id %}"
+                                                method="post">
+                                                {% csrf_token %}
+                                                <div class="form-row">
+                                                    <div class="col-3">
+                                                        <label for="text" class="col-sm-2 col-form-label">Comment</label>
+                                                        <textarea name="text" id="text_field" class="form-control"></textarea>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <button type="submit" class="btn btn-primary btn-sm mb-2">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-11 col-md-offset-1">
+                                    {% if review.comments.all %}
+                                        <!--Review Comments Section -->
+                                        <p>Comments: {{ review.comments.count }}</p>
+                                        {% for comment in review.comments.all %}
+                                            <div class="comment">
+                                                <p>{{ comment.text|linebreaks }}</p>
+                                                <small class="text-muted">{{ comment.created_date }}</small>
+                                                <strong>{{ comment.user }}</strong>
+                                            </div>
+                                        {% empty %}
+                                            <p>No comments here yet :(</p>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p>There is no comment yet.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>There are currently no user reviews. </p>
+            {% endif %}
+        </div>
+    </div>
 
-      {% endfor %}
+    <script type="text/javascript">
 
-    {% else %}
-        <p>There are currently no user reviews. </p>
-    {% endif %}
-    <hr>
-    <h4>Add a review</h4>
-        {% if request.user.is_authenticated %}
-            <form action="{% url 'apps:restaurant_review_create' restaurant.id %}" method="post">
-            {% csrf_token %}
-                <p>Comments</p>
-                <textarea name="comment" id="comment"></textarea>
-                <p>Rating</p>
-                <p>
-                    {% for rate in RATING_CHOICES %}
-                      <input type="radio" name="rating"
-                             id="rating{{ forloop.counter }}" value="{{ rate.0 }}"/>
-                        <label for="choice{{ forloop.counter }}">
-                            {{ rate.0 }} star</label>
-                      <br/>
-                    {% endfor %}
-                </p>
-                <input type="submit" value="submit" />
-            </form>
-        {% else %}
-            <p>Please
-                <a href="{% url 'login' %}?next={% firstof request.path '/' %}">
-                    sign in</a> to comment again. </p>
-        {% endif %}
+        $(document).ready(function(){
+          $("a#add_review").click(function(event) {  
+            event.preventDefault();   
+            $('#add_review_form').slideToggle('slow');
+         }); 
+      
+         $("a#add_comment").click(function(event) {  
+            event.preventDefault();   
+            var review_id = $(this).attr('class');
+            $('#add_comment_form_'+review_id).slideToggle('slow');
+         }); 
+      
+      
+         $('#thumps-down').on('click', function(){
+            var disabled = $(this).hasClass('disabled');
+            if(disabled === true){
+                alert("You have already unliked the restaurant!!!");
+            }else{
+                likePost(this);
+            }
+          });
+      
+          function likePost(thumb){
+              id = '{{ restaurant.id }}';
+              var url = '{% url "apps:rate_negative" pk=0 %}'.replace(0, id);
+              $.ajax({
+                url: url,
+                data: { csrfmiddlewaretoken: '{{ csrf_token }}'},
+                method: 'POST',
+                success: function(msg){
+                    alert(msg.success);
+                },
+                error: function(msg){
+                    console.log(msg.error);
+                }
+              });
+          }
+        });
+      </script>
+
 
 {% endblock %}

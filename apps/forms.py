@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm, TextInput, URLInput
-from .models import Restaurant, RestaurantReview
+from .models import Restaurant, RestaurantReview, Comment
 from django.contrib.gis.geos import Point
 from location_field.forms.spatial import LocationField
 
@@ -24,3 +24,17 @@ class RestaurantReviewForm(ModelForm):
     class Meta:
         model = RestaurantReview
         exclude = ('user', 'date', 'restaurant')
+
+
+class SearchForm(forms.Form):
+    text = forms.CharField(label='Search', 
+            help_text='Search by Restaurant Name or Address', 
+            max_length=250)
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ('text',)
+            
+

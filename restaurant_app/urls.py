@@ -21,7 +21,7 @@ from django.contrib.auth import views as auth_views
 from apps.views import signup
 
 urlpatterns = [
-    url('^apps/', include('apps.urls')),
+    url('', include('apps.urls')),
     url('^admin/', admin.site.urls),
     url(r'^login/$',
         auth_views.LoginView.as_view(template_name='login.html'),

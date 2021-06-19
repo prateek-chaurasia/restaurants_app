@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Log in to My Site</h2>
+  <h2>Login</h2>
   {% if form.errors %}
     <p style="color: red">Your username and password didn't match. Please try again.</p>
   {% endif %}
@@ -9,18 +9,18 @@
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}" />
     {% for field in form %}
-      <p>
+      <div class="form-group">
         {{ field.label_tag }}<br>
         {{ field }}<br>
         {% for error in field.errors %}
           <p style="color: red">{{ error }}</p>
         {% endfor %}
         {% if field.help_text %}
-          <p><small style="color: grey">{{ field.help_text }}</small></p>
+          <small class="form-text text-muted">{{ field.help_text }}</small>
         {% endif %}
-      </p>
+      </div>
     {% endfor %}
-    <button type="submit">Log in</button>
+    <button type="submit" class="btn btn-primary btn-sm">Log in</button>
     <a href="{% url 'signup' %}">New to My Site? Sign up</a>
   </form>
 {% endblock %}

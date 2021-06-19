@@ -1,28 +1,66 @@
 {% extends "../base.html" %}
 {% block title %}
-    Restaurants List
+Restaurants List
 {% endblock %}
 {% block content %}
- <h3>Restaurants</h3>
+<div class="row">
+	<div class="col-md-6">
+		<form method="POST" action="">{% csrf_token %}
+			<legend>Search Restaurants Nearby</legend>
+			{% for field in form %}
+				<div class="form-group">
+					{{ field.errors }}
+					{{ field.label_tag }} {{ field }}
+					{% if field.help_text %}
+					<small class="form-text text-muted">{{ field.help_text|safe }}</small>
+					{% endif %}
+				</div>
+			{% endfor %}
+			<div class="row top-buffer">
+			<button type="submit" class="btn btn-primary btn-sm">Search</button>
+			</div>
+		</form>
+	</div>
+	{% if request.user.is_authenticated %}
+		<div class="col-md-3 col-md-offset-2">
+			<span class="glyphicon glyphicon-plus"></span>
+			<a href="{% url 'apps:restaurant_create' %}">Add a restaurant</a>
+		</div>
+	{% else %}
+	<div class="col-md-3 col-md-offset-2">
+		<p>Add a restaurant after
+			<a href="{% url 'login' %}?next={% url 'apps:restaurant_create' %}">
+				sign in</a>.
+		</p>
+	</div>
+	{% endif %}
+</div>
 
-<ul class="list-group list-group-flush">
-  {% for restaurant in latest_restaurant_list %}
-    <li class="list-group-item">
-        <a href="{% url 'apps:restaurant_detail' restaurant.id %}">
-        {{ restaurant.name }}</a>
-    </li>
-    {% empty %}
-    <li class="list-group-item">Sorry, no restaurant reviews. </li>
-  {% endfor %}
-</ul>
-<hr>
+	{% if latest_restaurant_list and search_string %}
+	<div class="row" id="restaurant-list">
+		<h3>Restaurants</h3>
 
-  <p><span class="glyphicon glyphicon-plus"></span> 
-    <a href="{% url 'apps:restaurant_create' %}">Add a restaurant</a>
-  </p>
+		<ul class="restaurant-list">
+			{% for restaurant in latest_restaurant_list %}
+			<li class="list-group-item">
+				<a href="{% url 'apps:restaurant_detail' restaurant.id %}">
+					{{ restaurant.name }}</a>
+                
+				<span class="glyphicon glyphicon-thumbs-down"></span>
+				({{ restaurant.get_unsuggested_count }})
+			</li>
+			{% empty %}
+			<li class="list-group-item">Sorry, no restaurant reviews. </li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
 
-  <p>Add a restaurant after
-     <a href="{% url 'login' %}?next={% url 'apps:restaurant_create' %}">
-       sign in</a>. 
-  </p>
+	{% if no_result %}
+		<p>
+			{{ no_result }}
+		</p>
+	{% endif %}
+
+	
 {% endblock %}

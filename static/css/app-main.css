@@ -1,9 +1,58 @@
-ul.restaurant-list li{
-    padding: 5px;
-    list-style: none;
+.main-wrapper {
+    min-height: 80vh;  
+}  
+
+ul.restaurant-list > li:nth-of-type(odd) {
+    background-color: #f5f5f5 ;
+}
+
+
+ul.restaurant-list > li {
+    border-bottom: 1px solid rgb(222,222,222);
+    padding: 6px;
 }
 
 .published-on{
     font-size: 10px;
     font-weight: bold;
+}
+
+.footer{
+    height: 60px;
+    line-height: 60px;
+    background-color: #f5f5f5;
+}
+
+.top-buffer { 
+    margin-top:20px;
+    margin-left: 5px
+}
+
+.comment {
+    margin: 20px 0px 20px 20px;
+}
+
+a#add_review{
+    font-size: 12px;
+}
+
+#add_review_form, #add_comment_form{
+    margin: 10px 0;
+}
+
+.odd{
+    background-color: #98cd8d;
+}
+
+.even{
+    background-color: #f6f0cf;
+}
+
+span.visited, span.it-isme{
+    font-size: 12px;
+    color: green;
+}
+
+.sign-in-banner{
+    font-size: 12px;
 }
