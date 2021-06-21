@@ -25,7 +25,7 @@ SECRET_KEY = '@*q7%p_$@hu8hkytc%$s5dx%md_mwi-soghzk&ygk8ak7wj_k_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*','192.168.146.134', 'localhost']
 
 
 # Application definition
@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django_extensions',
     "django.contrib.gis",
     'location_field.apps.DefaultConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
     'apps',
 ]
 
@@ -143,4 +145,15 @@ LOCATION_FIELD = {
     'provider.openstreetmap.max_zoom': 18,
     'map.provider': 'openstreetmap',
     'search.provider': 'nominatim',
+}
+
+# Session Security related settings
+SESSION_SECURITY_WARN_AFTER = 55 * 60 # 55 Minutes
+SESSION_SECURITY_EXPIRE_AFTER = 60 * 60 # 1 Hour
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+    ],
 }

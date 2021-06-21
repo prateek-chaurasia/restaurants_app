@@ -19,6 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from apps.views import signup
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     url('', include('apps.urls')),
@@ -30,4 +31,5 @@ urlpatterns = [
         auth_views.LogoutView.as_view(template_name='logout.html'),
         {'next_page': 'login'}, name='logout'),
     url(r'^signup/$', signup, name='signup'),
+    url('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

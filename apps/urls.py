@@ -32,4 +32,7 @@ urlpatterns = [
     re_path(r'^restaurant/(?P<pk>\d+)/thumps-down',
         views.thumps_down, name='rate_negative'),
 
+    re_path(r'api/v1/getRestaurants', \
+         views.RestaurantAPIView.as_view(), name="get_restaurants"),
+
 ]
