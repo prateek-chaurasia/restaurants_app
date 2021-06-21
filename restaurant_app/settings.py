@@ -134,6 +134,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = '/apps/'
+LOGIN_URL = 'login'
 
 LOCATION_FIELD = {
     # 'search.provider': 'google',

@@ -1,0 +1,22 @@
+{% extends "../base.html" %}
+{% block title %}
+Users List
+{% endblock %}
+{% block content %}
+	{% if users_list %}
+	<div class="row" id="restaurant-list">
+		<h3>Users</h3>
+		<ul class="restaurant-list">
+			{% for user in users_list %}
+			<li class="list-group-item">
+				<a href="{% url 'apps:user_detail' user.id %}">
+					{{ user.username }}</a>
+			</li>
+			{% empty %}
+			<li class="list-group-item">Sorry, no users till now. </li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+	
+{% endblock %}

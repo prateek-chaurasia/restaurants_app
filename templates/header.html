@@ -20,7 +20,9 @@
    <li><a href="{% url 'logout' %}">Sign out</a></li>
             </ul>
           </li>
+          <li class="dropdown"><a class="dropdown-toggle" href="{% url 'apps:users_list' %}" >Users</a></li>
          {% else %}
+    
    <li class="dropdown"><a class="dropdown-toggle btn-green" href="{% url 'signup' %}"><span class="glyphicon glyphicon-user"></span> Sign up</a></li>
    <li class="dropdown"><a class="dropdown-toggle" href="{% url 'login' %}" ><span class="glyphicon glyphicon-log-in"></span> </a></li>
        {% endif %}
@@ -30,3 +32,10 @@
 
   </div>
 </nav>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}

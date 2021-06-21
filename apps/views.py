@@ -4,9 +4,10 @@ from django.urls import reverse
 from django.views.generic import DetailView, ListView, UpdateView
 from django.views.generic.edit import CreateView
 from .models import RestaurantReview, Restaurant, Comment, MapUserRestaurant
-from .forms import RestaurantForm, RestaurantReviewForm, SearchForm, CommentForm
+from .forms import (RestaurantForm, RestaurantReviewForm, SearchForm, 
+            CommentForm, CustomUserCreationForm, ProfileForm)
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
+# from django.contrib.auth.forms import UserCreationForm
 from geopy.geocoders import Nominatim
 from django.db import IntegrityError
 from django.http import JsonResponse
@@ -19,6 +20,10 @@ from rest_framework import status
 from .helpers.api_utils import is_param_valid_client_api
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.decorators import login_required
 
 DEFAULT_LIMIT = 10
 DEFAULT_OFFSET = 0
@@ -35,7 +40,12 @@ def get_limit_offset(request):
     return limit, offset
 
 class RestaurantList(ListView):
-
+    """
+    This class displays the list of restaurants available in our applicaiton
+    database, it also renders a form from where a user can search his favourite
+    restaurant and add it to the application's database. In this way the
+    list of restaurants in the application grows.
+    """
     queryset = Restaurant.objects.all().order_by('-date')
     # context_object_name = 'latest_restaurant_list'
     template_name = 'apps/restaurant_list.html'
@@ -63,6 +73,9 @@ class RestaurantList(ListView):
 
 
 class RestaurantDetail(DetailView):
+    """
+    This class redirects the user to the Restaurant Detail page.
+    """
     model = Restaurant
     template_name = 'apps/restaurant_detail.html'
 
@@ -73,6 +86,9 @@ class RestaurantDetail(DetailView):
 
 
 class RestaurantCreate(CreateView):
+    """
+    This class renders the Restaurant Creation form.
+    """
     model = Restaurant
     template_name = 'apps/form.html'
     form_class = RestaurantForm
@@ -90,12 +106,11 @@ class RestaurantCreate(CreateView):
         return super(RestaurantCreate, self).form_valid(form)
 
 
-class RestaurantEdit(UpdateView):
-    model = Restaurant
-    template_name = 'apps/form.html'
-    form_class = RestaurantForm
-
 class RestaurantReviewCreate(CreateView):
+    """
+    This class is used to create reviews on a restaurant by
+    a logged in user.
+    """
     model = RestaurantReview
     template_name = 'apps/form.html'
     form_class = RestaurantReviewForm
@@ -121,7 +136,12 @@ class RestaurantReviewCreate(CreateView):
         return super(RestaurantReviewCreate, self).form_valid(form)
 
 
+@login_required(login_url='/login/')
 def add_comment_to_review(request, review_id):
+    """
+    This function creates the comment on a review by a logged in
+    user.
+    """
     review = get_object_or_404(RestaurantReview, pk=review_id)
     if request.method == "POST":
         text = request.POST.get('text')
@@ -135,22 +155,90 @@ def add_comment_to_review(request, review_id):
 
 
 def signup(request):
+    """
+    Extending the User model and creating a profile for that user
+    to store few extra information about the user.
+    """
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            login(request, user)
-            return redirect('home')
+        try:
+            user_form = CustomUserCreationForm(request.POST)
+            profile_form = ProfileForm(request.POST)
+        except Exception as e:
+            messages.error(request, _(e))
+            user_form = CustomUserCreationForm()
+            profile_form = ProfileForm()
+            return render(request, 'signup.html', {
+                        'user_form': user_form,
+                        'profile_form': profile_form
+                    })
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                username = user_form.cleaned_data.get('username')
+                raw_password = user_form.cleaned_data.get('password2')
+                user_frm = user_form.save(commit=False)
+                user_frm.first_name = user_form.cleaned_data.get('first_name')
+                user_frm.last_name = user_form.cleaned_data.get('last_name')
+                user_frm.save()
+                user = authenticate(username=username, password=raw_password)
+                profile_form = ProfileForm(request.POST, instance=user.profile)
+                pr_form = profile_form.save(commit=False)
+                pr_form.birth_date = profile_form.cleaned_data.get('birth_date')
+                pr_form.mobile_number = profile_form.cleaned_data.get('mobile_number')
+                pr_form.hometown = profile_form.cleaned_data.get('hometown')
+                pr_form.save()
+                login(request, user)
+            except Exception as e:
+                messages.error(request, _(e))
+                user_form = CustomUserCreationForm()
+                profile_form = ProfileForm()
+                return render(request, 'signup.html', {
+                            'user_form': user_form,
+                            'profile_form': profile_form
+                        })
+            messages.success(request, _('Your profile was successfully updated!'))
+            return redirect('apps:users_list')
+        else:
+            messages.error(request, _('Please correct the error below.'))
     else:
-        form = UserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+        user_form = CustomUserCreationForm()
+        profile_form = ProfileForm()
+    return render(request, 'signup.html', {
+                    'user_form': user_form,
+                    'profile_form': profile_form
+                })
+
+
+class UserProfileList(ListView):
+    """
+    User List class
+    """
+    queryset = User.objects.all().order_by('-date_joined').select_related('profile')
+    context_object_name = 'users_list'
+    template_name = 'apps/users_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserProfileList, self).get_context_data(**kwargs)
+        return context
+
+class UserDetail(DetailView):
+    """
+    User Details Class
+    """
+    model = User
+    context_object_name = 'user'
+    template_name = 'apps/user_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserDetail, self).get_context_data(**kwargs)
+        return context
 
 
 
 def thumps_down(request, pk):
+    """
+    Function to handle the AJAX request and perform the
+    thumps down functionality.
+    """
     restaurant_obj = Restaurant.objects.get(pk=pk)
     map_obj = MapUserRestaurant.objects.get(user=request.user,
                 restaurant=restaurant_obj)
@@ -164,9 +252,12 @@ def thumps_down(request, pk):
 
 class RestaurantAPIView(APIView):
     """
-    This class will accept filters from client, and returns all the restaurants,
-    reviews and comments, it will also allow a search parameter with the name of 
+    This class will accept filters from users, and returns all the restaurants,
+    reviews and comments, it will also allow a search parameter with the name of
     the restaurant.
+    Basic Token authentication is implemented, we can generate the user token
+    via a utility enabled in this application by passing the username and password
+    for the user.
     """
     permission_classes = (IsAuthenticated,) 
     serializer_class = RestaurantSerializer

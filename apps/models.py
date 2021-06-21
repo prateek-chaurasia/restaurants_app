@@ -4,6 +4,24 @@ from datetime import date, datetime
 from django.urls import reverse
 from django.contrib.gis.geos import Point
 from location_field.models.spatial import LocationField
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    mobile_number = models.CharField(max_length=15, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    hometown = models.CharField(max_length=15, blank=True)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=250)
